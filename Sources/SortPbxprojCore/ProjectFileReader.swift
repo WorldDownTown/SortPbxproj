@@ -7,20 +7,6 @@
 
 import Foundation
 
-extension String {
-    private func regexMatch(_ pattern: String) throws -> NSTextCheckingResult? {
-        let regex: NSRegularExpression = try .init(pattern: pattern)
-        return regex.firstMatch(in: self, range: NSMakeRange(0, (self as NSString).length))
-    }
-
-    func regexMatches(_ pattern: String) -> [String] {
-        guard case .some(.some(let result)) = try? regexMatch(pattern) else { return [] }
-        return (0..<result.numberOfRanges)
-            .map { result.range(at: $0) }
-            .map { (self as NSString).substring(with: $0) }
-    }
-}
-
 public typealias CallbackToWrite = (String) -> Void
 
 public class ProjectFileReader {
@@ -198,10 +184,5 @@ public class ProjectFileReader {
             default: break
             }
         }
-    }
-
-    func copy(to pathToCopy: String? = nil) throws {
-        let toPath: String = pathToCopy ?? path + ".bk"
-        try FileManager.default.copyItem(atPath: path, toPath: toPath)
     }
 }

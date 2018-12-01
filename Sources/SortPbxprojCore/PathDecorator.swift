@@ -36,9 +36,3 @@ public struct PathDecorator {
         }
     }
 }
-
-private extension String {
-    func appendingPathComponent(_ path: String) -> String {
-        return (self as NSString).appendingPathComponent(path)
-    }
-}
