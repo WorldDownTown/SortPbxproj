@@ -7,10 +7,48 @@
 
 import Foundation
 
-struct ProjectFileWrite {
-    private let path: String
+public class ProjectFileWriter {
+    public enum Error: Swift.Error {
+        case fileNotCreated, fileHandleNotCreated
+    }
 
-    init(path: String) {
+    private let fileManager: FileManager = .default
+    private let path: String
+    private var fileHandle: FileHandle!
+
+    public init(path: String) {
         self.path = path
+    }
+
+    private var tmpFilename: String {
+        // FIXME: better tmporary filname
+        return path + "-XXXXXXXX"
+    }
+
+    /// Create a temporary empty file
+    public func createTmpFile() throws {
+        guard fileManager.createFile(atPath: tmpFilename, contents: nil) else {
+            throw Error.fileNotCreated
+        }
+        guard let handle = FileHandle(forWritingAtPath: tmpFilename) else {
+            throw Error.fileHandleNotCreated
+        }
+        fileHandle = handle
+    }
+
+    public func write(string: String) {
+        fileHandle.write((string + "\n").data(using: .utf8)!)
+    }
+
+    public func overwritePbxproj() throws {
+        defer {
+            removeTmpFile()
+        }
+        try fileManager.removeItem(atPath: path)
+        try fileManager.moveItem(atPath: tmpFilename, toPath: path)
+    }
+
+    private func removeTmpFile() {
+        _ = try? fileManager.removeItem(atPath: tmpFilename)
     }
 }

@@ -10,12 +10,20 @@ import Foundation
 public typealias CallbackToWrite = (String) -> Void
 
 public class ProjectFileReader {
-    private let path: String
+    private enum ReadLineState {
+        case startFiles
+        case sortingFiles
+        case endFiles
+        case startChildren
+        case sortingChildren
+        case endChildren
+        case other
+    }
+
     private let contents: String
     private let mainGroup: String?
 
     public init(path: String) throws {
-        self.path = path
         let contents: String = try String(contentsOfFile: path, encoding: .utf8)
         self.contents = contents
         mainGroup = ProjectFileReader.searchMainGroup(in: contents)
@@ -30,16 +38,6 @@ public class ProjectFileReader {
             stop = !references.isEmpty
         }
         return mainGroup
-    }
-
-    private enum ReadLineState {
-        case startFiles
-        case sortingFiles
-        case endFiles
-        case startChildren
-        case sortingChildren
-        case endChildren
-        case other
     }
 
     private func calculateState(for line: String, lastState: ReadLineState, lastTwoLines: [String]) -> ReadLineState {
