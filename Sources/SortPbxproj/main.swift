@@ -12,6 +12,6 @@ private func main(path: String, suppress: Bool) throws {
 }
 
 command(
-    Argument<String>("filepath", description: "File path to *.xcodeproj or project.pbxproj"),
-    Flag("no-warnings"),
+    Argument<String>("path", description: "File path to *.xcodeproj or project.pbxproj"),
+    Flag("no-warnings", description: "ignore file path is valid or not"),
     main).run()
