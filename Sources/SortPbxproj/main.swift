@@ -1,12 +1,15 @@
 import Commander
 import SortPbxprojCore
 
-func main(path: String, suppress: Bool) {
+private func main(path: String, suppress: Bool) {
     do {
         let decorator: PathDecorator = .init(path: path, strict: !suppress)
         let projectFilePath: String = try decorator.decorate()
-        let reader: FileReader = try .init(path: projectFilePath)
-        try reader.sort()
+
+        let reader: ProjectFileReader = try .init(path: projectFilePath)
+        reader.sortLines { string in
+            print(string)
+        }
     } catch {
         print(error.localizedDescription)
     }
@@ -14,6 +17,5 @@ func main(path: String, suppress: Bool) {
 
 command(
     Argument<String>("filepath", description: "File path to *.xcodeproj or project.pbxproj"),
-    Flag("no-warnings")) { (path: String, suppress: Bool) in
-        main(path: path, suppress: suppress)
-    }.run()
+    Flag("no-warnings"),
+    main).run()
