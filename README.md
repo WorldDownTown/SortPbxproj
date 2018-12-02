@@ -16,13 +16,13 @@
 ### Homebrew (Recommended)
 
 ```sh
-$ brew install WorldDownTwon/tap/sort-pbxproj
+$ brew install WorldDownTown/taps/sort-pbxproj
 ```
 
 or
 
 ```sh
-$ brew tap WorldDgwnTown/taps
+$ brew tap WorldDownTown/taps
 $ brew install sort-pbxproj
 ```
 
