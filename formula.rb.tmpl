@@ -1,0 +1,16 @@
+class SortPbxproj < Formula
+  desc 'Script to sort "children" and "files" sections in Xcode project.pbxproj files'
+  homepage 'https://github.com/WorldDownTown/SortPbxproj'
+  url 'https://github.com/WorldDownTown/SortPbxproj/archive/{{TAG}}.tar.gz'
+  sha256 '{{SHA256}}'
+
+  def install
+    system 'make', 'install', "PREFIX=#{prefix}"
+  end
+
+  test do
+    system 'false'
+  end
+
+  depends_on xcode: ['11.3', :build]
+end
