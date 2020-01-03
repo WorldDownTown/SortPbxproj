@@ -23,13 +23,13 @@ public struct PathDecorator {
         let projectFileName: String = "project.pbxproj"
         switch try PathChecker.type(of: path) {
         case .file:
-            if strict && !path.hasSuffix(projectFileName) {
+            if strict, !path.hasSuffix(projectFileName) {
                 throw Error.projectFileDoesNotExist
             }
             return path
         case .directory:
             let appendedPath: String = path.appendingPathComponent(projectFileName)
-            guard case .some(.file) = try? PathChecker.type(of: appendedPath) else {
+            guard case .file = try? PathChecker.type(of: appendedPath) else {
                 throw Error.projectFileDoesNotExist
             }
             return appendedPath

@@ -20,10 +20,8 @@ public class ProjectFileWriter {
         self.path = path
     }
 
-    private var tmpFilename: String {
-        // FIXME: better tmporary filname
-        return path + "-XXXXXXXX"
-    }
+    // FIXME: better tmporary filname
+    private var tmpFilename: String { path + "-XXXXXXXX" }
 
     /// Create a temporary empty file
     public func createTmpFile() throws {
@@ -37,7 +35,7 @@ public class ProjectFileWriter {
     }
 
     public func write(string: String) {
-        fileHandle.write((string + "\n").data(using: .utf8)!)
+        fileHandle.write("\(string)\n".data(using: .utf8)!)
     }
 
     public func overwritePbxproj() throws {

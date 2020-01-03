@@ -8,9 +8,7 @@
 import Foundation
 
 public struct PathChecker {
-    public enum Error: Swift.Error {
-        case filePathDoesNotExist
-    }
+    public enum Error: Swift.Error { case filePathDoesNotExist }
     enum PathType { case file, directory }
 
     static func type(of path: String) throws -> PathType {
@@ -19,7 +17,7 @@ public struct PathChecker {
         switch (exists, isDirectory.boolValue) {
         case (true, true): return .directory
         case (true, false): return .file
-        case (false, _): throw Error.filePathDoesNotExist
+        default: throw Error.filePathDoesNotExist
         }
     }
 }

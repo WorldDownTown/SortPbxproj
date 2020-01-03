@@ -24,46 +24,42 @@ public class ProjectFileReader {
     private let mainGroup: String?
 
     public init(path: String) throws {
-        let contents: String = try String(contentsOfFile: path, encoding: .utf8)
-        self.contents = contents
+        contents = try String(contentsOfFile: path, encoding: .utf8)
         mainGroup = ProjectFileReader.searchMainGroup(in: contents)
     }
 
     private static func searchMainGroup(in contents: String) -> String? {
-        var mainGroup: String?
-        let pattern: String = "\\s*mainGroup = ([0-9A-F]{24});$"
-        contents.enumerateLines { line, stop in
-            let references: [String] = line.regexMatches(pattern)
-            mainGroup = references.last
-            stop = !references.isEmpty
-        }
-        return mainGroup
+        contents
+            .components(separatedBy: "\n")
+            .lazy
+            .compactMap { $0.regexMatches(#"\s*mainGroup = ([0-9A-F]{24});$"#).last }
+            .first
     }
 
     private func calculateState(for line: String, lastState: ReadLineState, lastTwoLines: [String]) -> ReadLineState {
-        if !line.regexMatches("^(\\s*)files = \\(\\s*$").isEmpty {
+        guard line.regexMatches(#"^(\s*)files = \(\s*$"#).isEmpty else {
             return .startFiles
         }
 
-        if !line.regexMatches("^(\\s*)children = \\(\\s*$").isEmpty {
+        if !line.regexMatches(#"^(\s*)children = \(\s*$"#).isEmpty {
             // ignore children in mainGroup
-            guard let mainGroup = mainGroup, let lineBeforeTwo = lastTwoLines.first, !lineBeforeTwo.regexMatches("^\\s+\(mainGroup) = \\{$").isEmpty else {
+            guard let mainGroup = mainGroup, let lineBeforeTwo = lastTwoLines.first, !lineBeforeTwo.regexMatches(#"^\s+\#(mainGroup) = \{$"#).isEmpty else {
                 return .startChildren
             }
         }
 
         switch lastState {
         case .startFiles, .sortingFiles:
-            if !line.regexMatches("^\\s*\\);\\s*$").isEmpty {
-                return .endFiles
-            } else {
+            if line.regexMatches(#"^\s*\);\s*$"#).isEmpty {
                 return .sortingFiles
+            } else {
+                return .endFiles
             }
         case .startChildren, .sortingChildren:
-            if !line.regexMatches("^\\s*\\);\\s*$").isEmpty {
-                return .endChildren
-            } else {
+            if line.regexMatches(#"^\s*\);\s*$"#).isEmpty {
                 return .sortingChildren
+            } else {
+                return .endChildren
             }
         default:
             return .other
@@ -114,7 +110,7 @@ public class ProjectFileReader {
     /// - Returns:
     ///     - Sorted array of lines
     private func sortFiles(line1: String, line2: String) -> Bool {
-        let pattern: String = "^\\s*[0-9A-F]{24} /\\* (.+) in "
+        let pattern: String = #"^\s*[0-9A-F]{24} /\* (.+) in "#
         guard let filename1: String = line1.regexMatches(pattern).last,
             let filename2: String = line2.regexMatches(pattern).last else { return true }
         return filename1.lowercased() < filename2.lowercased()
@@ -140,17 +136,14 @@ public class ProjectFileReader {
     /// - Returns:
     ///     Sorted array of lines
     private func sortChildren(line1: String, line2: String) -> Bool {
-        let patternForFilename: String = "^\\s*[0-9A-F]{24} /\\* (.+) \\*/,$"
+        let patternForFilename: String = #"^\s*[0-9A-F]{24} /\* (.+) \*/,$"#
         guard let filename1: String = line1.regexMatches(patternForFilename).last,
             let filename2: String = line2.regexMatches(patternForFilename).last else { return true }
 
-        let patternForExtension: String = "\\.([^\\.]+)$"
-        let ext1: String? = filename1.regexMatches(patternForExtension).last
-        let ext2: String? = filename2.regexMatches(patternForExtension).last
-        if ext1 == nil && ext2 != nil || ext1 != nil && ext2 == nil {
-            return ext1 == nil
-        }
-
+        let patternForExtension: String = #"\.([^\.]+)$"#
+        let count1: Int = filename1.regexMatches(patternForExtension).count
+        let count2: Int = filename2.regexMatches(patternForExtension).count
+        guard count1 == count2 else { return count1 == 0 }
         return filename1.lowercased() < filename2.lowercased()
     }
 
@@ -159,7 +152,7 @@ public class ProjectFileReader {
         var lastTwoLines: [String] = []
         var linesToSort: [String] = []
 
-        contents.enumerateLines { line, stop in
+        contents.enumerateLines { line, _ in
             let state: ReadLineState = self.calculateState(for: line, lastState: lastState, lastTwoLines: lastTwoLines)
 
             defer {

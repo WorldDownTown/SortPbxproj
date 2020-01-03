@@ -2,7 +2,7 @@
 
 ![platforms](https://img.shields.io/badge/platforms-macOS-333333.svg)
 [![License](https://img.shields.io/:license-mit-blue.svg)](https://doge.mit-license.org)
-[![Language: Swift 4.2](https://img.shields.io/badge/swift-4.2-e05c43.svg?style=flat)](https://developer.apple.com/swift)
+[![Language: Swift 5.1.3](https://img.shields.io/badge/swift-5.1.3-e05c43.svg)](https://developer.apple.com/swift)
 
 `SortPbxproj` is a command-line tool that sort "children" and "files" sections in Xcode project.pbxproj files as shown in the screenshots below. This script is inspired on by [sort-Xcode-project-file](https://github.com/WebKit/webkit/blob/master/Tools/Scripts/sort-Xcode-project-file).
 

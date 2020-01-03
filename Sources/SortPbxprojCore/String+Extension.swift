@@ -8,23 +8,18 @@
 import Foundation
 
 extension String {
-    private var nsString: NSString {
-        return self as NSString
-    }
-
-    private func regexMatch(_ pattern: String) throws -> NSTextCheckingResult? {
-        let regex: NSRegularExpression = try .init(pattern: pattern)
-        return regex.firstMatch(in: self, range: NSMakeRange(0, nsString.length))
-    }
+    private var nsString: NSString { self as NSString }
 
     func regexMatches(_ pattern: String) -> [String] {
-        guard case .some(.some(let result)) = try? regexMatch(pattern) else { return [] }
-        return (0..<result.numberOfRanges)
-            .map { result.range(at: $0) }
-            .map { nsString.substring(with: $0) }
+        guard let result: NSTextCheckingResult =
+            try? NSRegularExpression(pattern: pattern)
+                .firstMatch(in: self, range: NSMakeRange(0, nsString.length)) else { return [] }
+        return (0..<result.numberOfRanges).lazy
+            .map(result.range(at:))
+            .map(nsString.substring(with:))
     }
 
     func appendingPathComponent(_ path: String) -> String {
-        return nsString.appendingPathComponent(path)
+        nsString.appendingPathComponent(path)
     }
 }
