@@ -23,7 +23,7 @@ git tag $tag
 git push origin $tag
 
 curl -LOk "https://github.com/WorldDownTown/SortPbxproj/archive/${filename}"
-sha256=$(shasum -a 256 $filename | cut -d ' ' -f 1)
+sha256=`shasum -a 256 $filename | cut -d ' ' -f 1`
 echo "sha256:\n$sha256"
 rm $filename
 
