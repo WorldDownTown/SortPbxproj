@@ -9,4 +9,6 @@ open SortPbxproj.xcodeproj
 swift build
 # execute binary
 .build/debug/SortPbxproj SortPbxproj.xcodeproj
+# upgrade homebrew
+./release.sh <tag> <github-access-token>
 ```
