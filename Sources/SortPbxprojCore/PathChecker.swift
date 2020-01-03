@@ -17,7 +17,7 @@ public struct PathChecker {
         switch (exists, isDirectory.boolValue) {
         case (true, true): return .directory
         case (true, false): return .file
-        case (false, _): throw Error.filePathDoesNotExist
+        default: throw Error.filePathDoesNotExist
         }
     }
 }

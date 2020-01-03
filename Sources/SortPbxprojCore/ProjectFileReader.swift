@@ -141,12 +141,9 @@ public class ProjectFileReader {
             let filename2: String = line2.regexMatches(patternForFilename).last else { return true }
 
         let patternForExtension: String = #"\.([^\.]+)$"#
-        let ext1: String? = filename1.regexMatches(patternForExtension).last
-        let ext2: String? = filename2.regexMatches(patternForExtension).last
-        if ext1 == nil && ext2 != nil || ext1 != nil && ext2 == nil {
-            return ext1 == nil
-        }
-
+        let count1: Int = filename1.regexMatches(patternForExtension).count
+        let count2: Int = filename2.regexMatches(patternForExtension).count
+        guard count1 == count2 else { return count1 == 0 }
         return filename1.lowercased() < filename2.lowercased()
     }
 
