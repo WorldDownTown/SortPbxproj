@@ -8,5 +8,5 @@ open SortPbxproj.xcodeproj
 # build
 swift build
 # execute binary
-.build/debug/SortPbxproj
+.build/debug/SortPbxproj SortPbxproj.xcodeproj
 ```
