@@ -4,6 +4,9 @@ import PackageDescription
 
 let package = Package(
     name: "SortPbxproj",
+    products: [
+        .executable(name: "sort-pbxproj", targets: ["SortPbxproj"]),
+    ],
     dependencies: [
         .package(url: "https://github.com/kylef/Commander.git", from: "0.9.1"),
     ],
