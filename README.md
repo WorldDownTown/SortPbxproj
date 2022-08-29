@@ -35,6 +35,12 @@ $ git clone https://github.com/WorldDownTown/SortPbxproj.git
 $ make install
 ```
 
+### Mint
+
+```sh
+$ mint install WorldDownTown/SortPbxproj
+```
+
 ## Usage
 
 ```sh
