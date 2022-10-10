@@ -13,11 +13,10 @@ public struct PathChecker {
 
     static func type(of path: String) throws -> PathType {
         var isDirectory: ObjCBool = true
-        let exists: Bool = FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory)
-        switch (exists, isDirectory.boolValue) {
-        case (true, true): return .directory
-        case (true, false): return .file
-        default: throw Error.filePathDoesNotExist
+        if FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory) {
+            return isDirectory.boolValue ? .directory : .file
+        } else {
+            throw Error.filePathDoesNotExist
         }
     }
 }

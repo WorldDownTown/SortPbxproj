@@ -20,7 +20,7 @@ public class ProjectFileWriter {
         self.path = path
     }
 
-    // FIXME: better tmporary filname
+    // FIXME: better temporary filename
     private var tmpFilename: String { path + "-XXXXXXXX" }
 
     /// Create a temporary empty file
@@ -39,9 +39,7 @@ public class ProjectFileWriter {
     }
 
     public func overwritePbxproj() throws {
-        defer {
-            removeTmpFile()
-        }
+        defer { removeTmpFile() }
         try fileManager.removeItem(atPath: path)
         try fileManager.moveItem(atPath: tmpFilename, toPath: path)
     }

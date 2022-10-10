@@ -8,9 +8,7 @@
 import Foundation
 
 public struct PathDecorator {
-    public enum Error: Swift.Error {
-        case projectFileDoesNotExist
-    }
+    public enum Error: Swift.Error { case projectFileDoesNotExist }
 
     private let path: String
     private let strict: Bool

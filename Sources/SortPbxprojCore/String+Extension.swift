@@ -14,7 +14,7 @@ extension String {
         guard let result: NSTextCheckingResult =
             try? NSRegularExpression(pattern: pattern)
                 .firstMatch(in: self, range: NSMakeRange(0, nsString.length)) else { return [] }
-        return (0..<result.numberOfRanges).lazy
+        return (0..<result.numberOfRanges)
             .map(result.range(at:))
             .map(nsString.substring(with:))
     }

@@ -29,11 +29,14 @@ public class ProjectFileReader {
     }
 
     private static func searchMainGroup(in contents: String) -> String? {
-        contents
-            .components(separatedBy: "\n")
-            .lazy
-            .compactMap { $0.regexMatches(#"\s*mainGroup = ([0-9A-F]{24});$"#).last }
-            .first
+        var result: String?
+        contents.enumerateLines { line, stop in
+            if let match = line.regexMatches(#"\s*mainGroup = ([0-9A-F]{24});$"#).last {
+                result = match
+                stop = true
+            }
+        }
+        return result
     }
 
     private func calculateState(for line: String, lastState: ReadLineState, lastTwoLines: [String]) -> ReadLineState {
@@ -42,54 +45,39 @@ public class ProjectFileReader {
         }
 
         if !line.regexMatches(#"^(\s*)children = \(\s*$"#).isEmpty {
-            // ignore children in mainGroup
-            guard let mainGroup = mainGroup, let lineBeforeTwo = lastTwoLines.first, !lineBeforeTwo.regexMatches(#"^\s+\#(mainGroup) = \{$"#).isEmpty else {
+            if let mainGroup,
+               let lineBeforeTwo = lastTwoLines.first,
+               !lineBeforeTwo.regexMatches(#"^\s+\#(mainGroup) = \{$"#).isEmpty {
+                // continue
+            } else {
+                // ignore children in mainGroup
                 return .startChildren
             }
         }
 
         switch lastState {
         case .startFiles, .sortingFiles:
-            if line.regexMatches(#"^\s*\);\s*$"#).isEmpty {
-                return .sortingFiles
-            } else {
-                return .endFiles
-            }
+            return line.regexMatches(#"^\s*\);\s*$"#).isEmpty ? .sortingFiles : .endFiles
         case .startChildren, .sortingChildren:
-            if line.regexMatches(#"^\s*\);\s*$"#).isEmpty {
-                return .sortingChildren
-            } else {
-                return .endChildren
-            }
-        default:
+            return line.regexMatches(#"^\s*\);\s*$"#).isEmpty ? .sortingChildren : .endChildren
+        case .endFiles, .endChildren, .other:
             return .other
         }
     }
 
     private func write(line: String, state: ReadLineState, linesToSort: [String], callback: CallbackToWrite) {
         switch state {
-        case .endFiles:
-            let lines:String = linesToSort
-                .sorted(by: sortFiles)
-                .joined(separator: "\n")
-            if !lines.isEmpty {
-                callback(lines)
-            }
-        case .endChildren:
-            let lines:String = linesToSort
-                .sorted(by: sortChildren)
-                .joined(separator: "\n")
-            if !lines.isEmpty {
-                callback(lines)
-            }
-        default:
-            break
-        }
-
-        switch state {
-        case .startFiles, .endFiles, .startChildren, .endChildren, .other:
+        case .startFiles, .startChildren, .other:
             callback(line)
-        default:
+        case .endFiles, .endChildren:
+            let lines: String = linesToSort
+                .sorted(by: state == .endFiles ? sortFiles : sortChildren)
+                .joined(separator: "\n")
+            if !lines.isEmpty {
+                callback(lines)
+            }
+            callback(line)
+        case .sortingFiles, .sortingChildren:
             break
         }
     }
@@ -112,7 +100,7 @@ public class ProjectFileReader {
     private func sortFiles(line1: String, line2: String) -> Bool {
         let pattern: String = #"^\s*[0-9A-F]{24} /\* (.+) in "#
         guard let filename1: String = line1.regexMatches(pattern).last,
-            let filename2: String = line2.regexMatches(pattern).last else { return true }
+              let filename2: String = line2.regexMatches(pattern).last else { return true }
         return filename1.lowercased() < filename2.lowercased()
     }
 
@@ -138,13 +126,16 @@ public class ProjectFileReader {
     private func sortChildren(line1: String, line2: String) -> Bool {
         let patternForFilename: String = #"^\s*[0-9A-F]{24} /\* (.+) \*/,$"#
         guard let filename1: String = line1.regexMatches(patternForFilename).last,
-            let filename2: String = line2.regexMatches(patternForFilename).last else { return true }
+              let filename2: String = line2.regexMatches(patternForFilename).last else { return true }
 
         let patternForExtension: String = #"\.([^\.]+)$"#
         let count1: Int = filename1.regexMatches(patternForExtension).count
         let count2: Int = filename2.regexMatches(patternForExtension).count
-        guard count1 == count2 else { return count1 == 0 }
-        return filename1.lowercased() < filename2.lowercased()
+        if count1 == count2 {
+            return filename1.lowercased() < filename2.lowercased()
+        } else {
+            return count1 == 0
+        }
     }
 
     public func sortLines(callback: @escaping CallbackToWrite) {
@@ -152,8 +143,11 @@ public class ProjectFileReader {
         var lastTwoLines: [String] = []
         var linesToSort: [String] = []
 
-        contents.enumerateLines { line, _ in
-            let state: ReadLineState = self.calculateState(for: line, lastState: lastState, lastTwoLines: lastTwoLines)
+        contents.enumerateLines { [weak self] line, _ in
+            guard let self else { return }
+            let state: ReadLineState = self.calculateState(for: line,
+                                                           lastState: lastState,
+                                                           lastTwoLines: lastTwoLines)
 
             defer {
                 lastTwoLines.append(line)
@@ -164,7 +158,8 @@ public class ProjectFileReader {
             switch state {
             case .sortingFiles, .sortingChildren:
                 linesToSort.append(line)
-            default: break
+            case .startFiles, .endFiles, .startChildren, .endChildren, .other:
+                break
             }
 
             self.write(line: line, state: state, linesToSort: linesToSort, callback: callback)
@@ -172,7 +167,8 @@ public class ProjectFileReader {
             switch state {
             case .endFiles, .endChildren:
                 linesToSort.removeAll()
-            default: break
+            case .startFiles, .sortingFiles, .startChildren, .sortingChildren, .other:
+                break
             }
         }
     }
