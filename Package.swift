@@ -8,7 +8,7 @@ let package = Package(
         .executable(name: "sort-pbxproj", targets: ["SortPbxproj"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/kylef/Commander.git", from: "0.9.1"),
+        .package(url: "https://github.com/kylef/Commander.git", from: "0.9.2"),
     ],
     targets: [
         .target(name: "SortPbxproj", dependencies: ["SortPbxprojCore", "Commander"]),
